@@ -1,0 +1,6 @@
+{
+  "name": "CampusCrate",
+  "description": "AI-powered Lost & Found system for colleges featuring intelligent item matching, claim verification, moderation, and smart QR tags.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,56 @@
+<svg viewBox="0 0 160 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="crateLeftGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1d4ed8" />
+      <stop offset="100%" stop-color="#2563eb" />
+    </linearGradient>
+    <linearGradient id="crateRightGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e3a8a" />
+      <stop offset="100%" stop-color="#1d4ed8" />
+    </linearGradient>
+    <linearGradient id="pinGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#00f2fe" />
+      <stop offset="100%" stop-color="#00b4d8" />
+    </linearGradient>
+    <linearGradient id="arrowGradLeft" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#1d4ed8" />
+      <stop offset="100%" stop-color="#00d8f6" />
+    </linearGradient>
+    <linearGradient id="arrowGradRight" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00f2fe" />
+      <stop offset="100%" stop-color="#00b4d8" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background rounded pill container for crisp visibility -->
+  <rect width="160" height="160" rx="36" fill="#0f172a" />
+
+  <g transform="translate(0, 5)">
+    <!-- Outer Circular Loop Arrows -->
+    <path d="M 38 72 A 42 42 0 0 1 70 32" stroke="url(#arrowGradLeft)" stroke-width="6.5" stroke-linecap="round" fill="none" />
+    <path d="M 68 25 L 80 34 L 66 41 Z" fill="#1d4ed8" />
+
+    <path d="M 120 54 A 42 42 0 0 1 148 94" stroke="url(#arrowGradRight)" stroke-width="6.5" stroke-linecap="round" fill="none" />
+    <path d="M 152 102 L 140 91 L 153 87 Z" fill="#00b4d8" />
+
+    <!-- Isometric Crate Box -->
+    <polygon points="92,48 132,68 92,88 52,68" fill="#0f172a" />
+
+    <!-- Left Wall -->
+    <polygon points="52,68 92,88 92,134 52,114" fill="url(#crateLeftGrad)" />
+    <rect x="63" y="92" width="14" height="5" rx="2.5" fill="#ffffff" opacity="0.8" transform="skewY(18)" />
+
+    <!-- Right Wall -->
+    <polygon points="92,88 132,68 132,114 92,134" fill="url(#crateRightGrad)" />
+
+    <!-- Magnifying Glass Icon -->
+    <circle cx="110" cy="102" r="10" stroke="#ffffff" stroke-width="3.5" fill="none" />
+    <line x1="117" y1="109" x2="125" y2="117" stroke="#ffffff" stroke-width="4" stroke-linecap="round" />
+
+    <!-- Location Pin -->
+    <g transform="translate(92, 60)">
+      <path d="M 0 -40 C -15 -40 -25 -28 -25 -12 C -25 8 0 24 0 24 C 0 24 25 8 25 -12 C 25 -28 15 -40 0 -40 Z" fill="url(#pinGrad)" />
+      <circle cx="0" cy="-16" r="7.5" fill="#ffffff" />
+    </g>
+  </g>
+</svg>
