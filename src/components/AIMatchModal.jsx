@@ -3,7 +3,6 @@ import { Sparkles, X, AlertTriangle, CheckCircle2, ArrowRight, MapPin, Zap } fro
 
 export const AIMatchModal = ({
   item,
-  currentUser,
   onClose,
   onInitiateClaim
 }) => {

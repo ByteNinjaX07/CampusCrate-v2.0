@@ -87,9 +87,16 @@ export const AdminDashboard = ({
             <h1 className="text-2xl font-black text-white flex items-center gap-2">
               Campus Governance & Moderation
             </h1>
-            <p className="text-xs text-slate-400">
-              Moderator Control Panel • AI Spam Detection & Claims Verification Oversight
-            </p>
+            <div className="flex items-center gap-2 flex-wrap mt-0.5">
+              <p className="text-xs text-slate-400">
+                Moderator Control Panel • AI Spam Detection & Claims Verification Oversight
+              </p>
+              {currentUser && (
+                <span className="px-2 py-0.5 bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 text-[10px] font-mono font-bold rounded-md">
+                  Admin: {currentUser.name} ({getUserTag(currentUser)})
+                </span>
+              )}
+            </div>
           </div>
         </div>
 

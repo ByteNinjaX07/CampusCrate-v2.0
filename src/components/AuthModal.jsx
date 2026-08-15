@@ -325,7 +325,6 @@ export const AuthModal = ({
   const [isCustomInstitute, setIsCustomInstitute] = useState(false);
   const [customInstitute, setCustomInstitute] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showCustomInput, setShowCustomInput] = useState(false);

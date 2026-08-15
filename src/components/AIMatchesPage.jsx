@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { Sparkles, PackageSearch, RefreshCw, ArrowRight, Zap, CheckCircle2, MapPin, Tag } from "lucide-react";
 import { ItemCard } from "./ItemCard";
 
@@ -14,8 +13,6 @@ export const AIMatchesPage = ({
   onOpenQR,
   onReport
 }) => {
-  const [selectedTargetItem, setSelectedTargetItem] = useState(items[0] || null);
-
   const filteredItems = items.filter((item) => {
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();

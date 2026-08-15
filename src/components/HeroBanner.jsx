@@ -8,8 +8,7 @@ export const HeroBanner = ({
   setSelectedCategory,
   stats,
   searchQuery,
-  setSearchQuery,
-  onQuickSearch
+  setSearchQuery
 }) => {
   const categories = [
     { id: "all", label: "All Items" },

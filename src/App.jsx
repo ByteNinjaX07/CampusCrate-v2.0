@@ -298,7 +298,6 @@ export default function App() {
     currentUser={currentUser}
     loading={loading}
     searchQuery={searchQuery}
-    setSearchQuery={setSearchQuery}
     selectedCategory={selectedCategory}
     setSelectedCategory={setSelectedCategory}
     onOpenPostLost={() => handleOpenPostModal("lost")}
@@ -315,7 +314,6 @@ export default function App() {
     currentUser={currentUser}
     loading={loading}
     searchQuery={searchQuery}
-    setSearchQuery={setSearchQuery}
     selectedCategory={selectedCategory}
     setSelectedCategory={setSelectedCategory}
     onOpenPostFound={() => handleOpenPostModal("found")}
@@ -409,7 +407,6 @@ export default function App() {
   }
       {itemForMatch && <AIMatchModal
     item={itemForMatch}
-    currentUser={currentUser}
     onClose={() => setItemForMatch(null)}
     onInitiateClaim={setItemForClaim}
   />}

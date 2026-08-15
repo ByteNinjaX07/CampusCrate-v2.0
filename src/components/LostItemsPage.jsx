@@ -1,5 +1,17 @@
 import { useState } from "react";
-import { PackageSearch, AlertCircle, PlusCircle, RefreshCw, Filter, LayoutGrid, List, ArrowUpDown } from "lucide-react";
+import {
+  PackageSearch,
+  AlertCircle,
+  PlusCircle,
+  RefreshCw,
+  Filter,
+  LayoutGrid,
+  List,
+  ArrowUpDown,
+  MapPin,
+  Sparkles,
+  QrCode
+} from "lucide-react";
 import { ItemCard } from "./ItemCard";
 
 const CATEGORIES = [
@@ -17,7 +29,6 @@ export const LostItemsPage = ({
   currentUser,
   loading,
   searchQuery,
-  setSearchQuery,
   selectedCategory,
   setSelectedCategory,
   onOpenPostLost,
@@ -137,6 +148,7 @@ export const LostItemsPage = ({
               className={`p-1.5 rounded-lg transition-all ${
                 viewMode === "grid" ? "bg-rose-600 text-white" : "text-slate-400 hover:text-slate-200"
               }`}
+              title="Grid View"
             >
               <LayoutGrid className="w-4 h-4" />
             </button>
@@ -145,6 +157,7 @@ export const LostItemsPage = ({
               className={`p-1.5 rounded-lg transition-all ${
                 viewMode === "list" ? "bg-rose-600 text-white" : "text-slate-400 hover:text-slate-200"
               }`}
+              title="Table View"
             >
               <List className="w-4 h-4" />
             </button>
@@ -153,13 +166,14 @@ export const LostItemsPage = ({
           <button
             onClick={onRefresh}
             className="p-2 text-slate-400 hover:text-rose-400 bg-slate-950 border border-slate-800 rounded-xl transition-colors"
+            title="Refresh"
           >
             <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
           </button>
         </div>
       </div>
 
-      {/* Grid or Empty */}
+      {/* Grid, Table or Empty */}
       {loading ? (
         <div className="py-20 text-center space-y-4">
           <div className="w-10 h-10 mx-auto border-2 border-rose-500 border-t-transparent rounded-full animate-spin" />
@@ -178,6 +192,78 @@ export const LostItemsPage = ({
           >
             + Report Lost Item
           </button>
+        </div>
+      ) : viewMode === "list" ? (
+        <div className="bg-slate-900/90 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs text-slate-300">
+              <thead className="bg-slate-950 text-slate-400 font-bold uppercase text-[10px] border-b border-slate-800">
+                <tr>
+                  <th className="py-3 px-4">Item</th>
+                  <th className="py-3 px-4">Category</th>
+                  <th className="py-3 px-4">Campus Location</th>
+                  <th className="py-3 px-4">Date</th>
+                  <th className="py-3 px-4">Status</th>
+                  <th className="py-3 px-4 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-800/60">
+                {lostItems.map((item) => (
+                  <tr
+                    key={item.id}
+                    onClick={() => onSelectItem(item)}
+                    className="hover:bg-slate-800/50 cursor-pointer transition-colors"
+                  >
+                    <td className="py-3 px-4 flex items-center gap-3">
+                      <img
+                        src={item.photoUrl}
+                        alt={item.title}
+                        className="w-10 h-10 rounded-lg object-cover bg-slate-950 shrink-0"
+                      />
+                      <div>
+                        <p className="font-bold text-slate-100 line-clamp-1">{item.title}</p>
+                        <p className="text-[11px] text-slate-400 line-clamp-1">{item.description}</p>
+                      </div>
+                    </td>
+                    <td className="py-3 px-4 font-medium text-slate-300">{item.category}</td>
+                    <td className="py-3 px-4 font-medium text-slate-300">
+                      <span className="flex items-center gap-1">
+                        <MapPin className="w-3 h-3 text-rose-400 shrink-0" />
+                        {item.location}
+                      </span>
+                    </td>
+                    <td className="py-3 px-4 font-mono text-[11px] text-slate-400">{item.date}</td>
+                    <td className="py-3 px-4">
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/20 text-rose-300 border border-rose-500/30">
+                        {item.status}
+                      </span>
+                    </td>
+                    <td className="py-3 px-4 text-right">
+                      <div
+                        className="flex items-center justify-end gap-1.5"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <button
+                          onClick={() => onOpenMatch(item)}
+                          className="p-1.5 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 rounded-lg border border-cyan-500/30 transition-colors"
+                          title="Run AI Match"
+                        >
+                          <Sparkles className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          onClick={() => onOpenQR(item)}
+                          className="p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg border border-slate-700 transition-colors"
+                          title="QR Tag"
+                        >
+                          <QrCode className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">

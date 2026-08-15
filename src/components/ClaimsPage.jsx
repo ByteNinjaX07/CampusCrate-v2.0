@@ -1,7 +1,7 @@
 import { MessageSquare, ShieldCheck, Lock, UserCheck, ArrowRight, Clock, CheckCircle2, XCircle } from "lucide-react";
 import { getUserTag, getUserHtmlId } from "../utils/userTag";
 
-export const ClaimsPage = ({ claims = [], onOpenThreadChat, onSelectItem }) => {
+export const ClaimsPage = ({ claims = [], onOpenThreadChat }) => {
   return (
     <div className="space-y-6">
       {/* Page Header Banner */}
