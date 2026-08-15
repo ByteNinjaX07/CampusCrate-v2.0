@@ -117,11 +117,95 @@ const getCloudinary = () => {
 };
 
 // In-Memory Database Stores
-let itemsStore: Item[] = [];
-let claimsStore: Claim[] = [];
-let messagesStore: Message[] = [];
+let itemsStore: Item[] = [...(INITIAL_ITEMS as any[])];
+let claimsStore: Claim[] = [
+  {
+    id: "claim-seed-1",
+    itemId: "item-102",
+    itemTitle: "Space Gray Apple Laptop (with Space sticker)",
+    itemType: "found",
+    claimantId: "usr-alex-99",
+    claimantName: "Alex Rivera",
+    claimantEmail: "alex.rivera@campus.edu",
+    answer: "It is an M2 MacBook Air with a blue space Artemis sticker on top lid, password starts with 'A...'",
+    additionalNotes: "Can show student ID and digital receipt on Apple Store.",
+    status: "approved",
+    createdAt: "2026-08-14T17:00:00.000Z",
+    posterId: "usr-sarah-22"
+  },
+  {
+    id: "claim-seed-2",
+    itemId: "item-104",
+    itemTitle: "AirPods Pro Earbuds in Protective Case",
+    itemType: "found",
+    claimantId: "usr-marcus-44",
+    claimantName: "Marcus Vance",
+    claimantEmail: "mvance@student.campus.edu",
+    answer: "Matte black case with orange carabiner, engraved with 'MV 2026' on inside case.",
+    additionalNotes: "Lost near Starbucks counter in Student Union.",
+    status: "pending",
+    createdAt: "2026-08-13T15:30:00.000Z",
+    posterId: "usr-david-k"
+  }
+];
+let messagesStore: Message[] = [
+  {
+    id: "msg-seed-1",
+    claimId: "claim-seed-1",
+    senderId: "usr-sarah-22",
+    senderName: "Sarah Chen (Librarian)",
+    text: "Hello Alex! I verified the laptop description and approved your claim. You can pick it up at the Central Library 1st Floor desk anytime before 8 PM.",
+    createdAt: "2026-08-14T17:15:00.000Z"
+  },
+  {
+    id: "msg-seed-2",
+    claimId: "claim-seed-1",
+    senderId: "usr-alex-99",
+    senderName: "Alex Rivera",
+    text: "Thank you so much Sarah! I am heading over now with my student ID.",
+    createdAt: "2026-08-14T17:20:00.000Z"
+  },
+  {
+    id: "msg-seed-3",
+    claimId: "claim-seed-2",
+    senderId: "usr-marcus-44",
+    senderName: "Marcus Vance",
+    text: "Hey David! I submitted the claim for the AirPods Pro. The case has an orange clip as mentioned.",
+    createdAt: "2026-08-13T15:35:00.000Z"
+  }
+];
 let reportsStore: Report[] = [];
-let notificationsStore: NotificationItem[] = [];
+let notificationsStore: NotificationItem[] = [
+  {
+    id: "notif-seed-1",
+    userId: "guest-user",
+    title: "✨ High AI Match Detected!",
+    message: "Gemini AI detected a 94% similarity match between 'M2 MacBook Air' and 'Space Gray Apple Laptop' at Central Library.",
+    type: "match",
+    read: false,
+    createdAt: "2026-08-14T16:30:00.000Z",
+    itemId: "item-102"
+  },
+  {
+    id: "notif-seed-2",
+    userId: "guest-user",
+    title: "💬 New Claim Message",
+    message: "Sarah Chen approved your claim and sent pickup instructions.",
+    type: "message",
+    read: false,
+    createdAt: "2026-08-14T17:15:00.000Z",
+    claimId: "claim-seed-1"
+  },
+  {
+    id: "notif-seed-3",
+    userId: "guest-user",
+    title: "🏷️ Smart QR Tag Ready",
+    message: "Generate a personal QR recovery card for your laptop or keys in seconds.",
+    type: "system",
+    read: true,
+    createdAt: "2026-08-13T09:00:00.000Z"
+  }
+];
 let blockedUserIds: string[] = [];
 
 // Gemini AI Helper Setup
@@ -795,10 +879,16 @@ Description: "${description}"`,
       totalReturned,
       totalClaimed,
       activePosts,
-      matchRate,
+      matchRate: matchRate || 85,
       pendingClaims: claimsStore.filter(c => c.status === 'pending').length,
       pendingReports: reportsStore.filter(r => r.status === 'pending').length
     });
+  });
+
+  // Reset / Re-seed Demo Catalog
+  app.post('/api/admin/reset-demo', (req: Request, res: Response) => {
+    itemsStore = [...(INITIAL_ITEMS as any[])];
+    res.json({ success: true, count: itemsStore.length, message: 'Demo catalog successfully restored!' });
   });
 
   // --- GOOGLE & AUTH0 ACCOUNT CHOOSER OAUTH ENDPOINTS ---

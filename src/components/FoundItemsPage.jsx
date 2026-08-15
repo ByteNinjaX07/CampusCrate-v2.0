@@ -1,5 +1,7 @@
-import { PackageSearch, CheckCircle2, PlusCircle, RefreshCw, Filter } from "lucide-react";
+import { useState } from "react";
+import { PackageSearch, CheckCircle, PlusCircle, RefreshCw, Filter, LayoutGrid, List, ArrowUpDown } from "lucide-react";
 import { ItemCard } from "./ItemCard";
+
 const CATEGORIES = [
   "all",
   "Electronics",
@@ -9,8 +11,9 @@ const CATEGORIES = [
   "Books & Notebooks",
   "Other"
 ];
+
 export const FoundItemsPage = ({
-  items,
+  items = [],
   currentUser,
   loading,
   searchQuery,
@@ -25,108 +28,173 @@ export const FoundItemsPage = ({
   onOpenQR,
   onReport
 }) => {
-  const foundItems = items.filter((item) => {
-    if (item.type !== "found") return false;
-    if (selectedCategory !== "all" && item.category !== selectedCategory) return false;
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase();
-      const matchTitle = item.title.toLowerCase().includes(q);
-      const matchDesc = item.description.toLowerCase().includes(q);
-      const matchLoc = item.location.toLowerCase().includes(q);
-      const matchTag = item.tags.some((t) => t.toLowerCase().includes(q));
-      if (!matchTitle && !matchDesc && !matchLoc && !matchTag) return false;
-    }
-    return true;
-  });
-  return <div className="space-y-6">
-      {
-    /* Page Header Banner */
-  }
-      <div className="bg-gradient-to-r from-emerald-900 via-emerald-800 to-slate-900 text-white rounded-3xl p-6 sm:p-8 shadow-md relative overflow-hidden">
-        <div className="relative z-10 max-w-3xl space-y-3">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-400/30 text-emerald-200 text-xs font-semibold">
-            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-300" />
-            <span>Dedicated Found & Logged Belongings Portal</span>
+  const [viewMode, setViewMode] = useState("grid");
+  const [sortBy, setSortBy] = useState("newest");
+
+  const foundItems = items
+    .filter((item) => {
+      if (item.type !== "found") return false;
+      if (selectedCategory !== "all" && item.category !== selectedCategory) return false;
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase();
+        const matchTitle = item.title.toLowerCase().includes(q);
+        const matchDesc = item.description.toLowerCase().includes(q);
+        const matchLoc = item.location.toLowerCase().includes(q);
+        const matchTag = item.tags?.some((t) => t.toLowerCase().includes(q));
+        if (!matchTitle && !matchDesc && !matchLoc && !matchTag) return false;
+      }
+      return true;
+    })
+    .sort((a, b) => {
+      if (sortBy === "newest") {
+        return new Date(b.createdAt || b.date).getTime() - new Date(a.createdAt || a.date).getTime();
+      }
+      if (sortBy === "oldest") {
+        return new Date(a.createdAt || a.date).getTime() - new Date(b.createdAt || b.date).getTime();
+      }
+      if (sortBy === "title") {
+        return a.title.localeCompare(b.title);
+      }
+      return 0;
+    });
+
+  return (
+    <div className="space-y-6">
+      {/* Page Header Banner */}
+      <div className="bg-gradient-to-r from-emerald-950 via-slate-900 to-slate-950 border border-emerald-900/40 text-white rounded-3xl p-6 sm:p-8 shadow-2xl relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-80 h-80 bg-emerald-600/10 rounded-full blur-3xl pointer-events-none" />
+
+        <div className="relative z-10 max-w-3xl space-y-4">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 text-xs font-bold">
+            <CheckCircle className="w-3.5 h-3.5 text-emerald-400" />
+            <span>Safely Recovered & Cataloged Campus Items</span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white">
+
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-white">
             Found Items on Campus
           </h1>
-          <p className="text-slate-200 text-xs sm:text-sm leading-relaxed">
-            Browse items turned in or discovered across campus. If you found a lost item, log it here to help reunite it with its rightful owner securely using custom verification questions.
+
+          <p className="text-slate-300 text-xs sm:text-sm leading-relaxed">
+            Items found by honest campus students, librarians, security officers, and resident advisors. Answer the secret ownership question to verify and claim your belongings safely.
           </p>
+
           <div className="pt-2 flex flex-wrap items-center gap-3">
             <button
-    onClick={onOpenPostFound}
-    className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl shadow-sm flex items-center gap-2 transition-colors"
-  >
+              onClick={onOpenPostFound}
+              className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs sm:text-sm rounded-xl shadow-lg shadow-emerald-950/60 flex items-center gap-2 transition-all transform hover:-translate-y-0.5"
+            >
               <PlusCircle className="w-4 h-4" />
-              <span>Report Found Item</span>
+              <span>+ Log Found Item</span>
             </button>
           </div>
         </div>
       </div>
 
-      {
-    /* Category Pills & Search Controls */
-  }
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs">
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-2 sm:pb-0 scrollbar-none">
-          <span className="text-xs font-semibold text-slate-500 flex items-center gap-1 mr-1">
-            <Filter className="w-3.5 h-3.5" /> Category:
+      {/* Category Pills & Toolbar */}
+      <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 shadow-xl backdrop-blur-md flex flex-col md:flex-row md:items-center justify-between gap-4">
+        {/* Categories */}
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-2 md:pb-0 scrollbar-none">
+          <span className="text-xs font-bold text-slate-400 flex items-center gap-1 mr-1 uppercase">
+            <Filter className="w-3.5 h-3.5 text-emerald-400" /> Filter:
           </span>
-          {CATEGORIES.map((cat) => <button
-    key={cat}
-    onClick={() => setSelectedCategory(cat)}
-    className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${selectedCategory === cat ? "bg-emerald-600 text-white shadow-2xs" : "bg-slate-100 text-slate-600 hover:bg-slate-200/80 hover:text-slate-900"}`}
-  >
+          {CATEGORIES.map((cat) => (
+            <button
+              key={cat}
+              onClick={() => setSelectedCategory(cat)}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all border ${
+                selectedCategory === cat
+                  ? "bg-emerald-600 text-white border-emerald-500 shadow-md shadow-emerald-950/50"
+                  : "bg-slate-950/70 text-slate-400 border-slate-800 hover:bg-slate-800 hover:text-slate-200"
+              }`}
+            >
               {cat === "all" ? "All Found" : cat}
-            </button>)}
+            </button>
+          ))}
         </div>
 
-        <div className="flex items-center justify-between sm:justify-end gap-3 border-t sm:border-t-0 pt-3 sm:pt-0 border-slate-100">
-          <span className="text-xs font-bold text-slate-700 bg-emerald-50 border border-emerald-100 text-emerald-700 px-2.5 py-1 rounded-lg">
+        {/* Sort & Views */}
+        <div className="flex items-center gap-3 justify-between md:justify-end flex-wrap">
+          <span className="text-xs font-bold bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 px-3 py-1 rounded-xl">
             {foundItems.length} Found Listed
           </span>
+
+          <div className="flex items-center gap-1.5 bg-slate-950 border border-slate-800 rounded-xl px-2.5 py-1 text-xs text-slate-300">
+            <ArrowUpDown className="w-3.5 h-3.5 text-slate-400" />
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              className="bg-transparent text-slate-200 text-xs font-semibold focus:outline-none cursor-pointer"
+            >
+              <option value="newest" className="bg-slate-900">Newest</option>
+              <option value="oldest" className="bg-slate-900">Oldest</option>
+              <option value="title" className="bg-slate-900">Title</option>
+            </select>
+          </div>
+
+          <div className="flex items-center gap-1 bg-slate-950 border border-slate-800 p-1 rounded-xl">
+            <button
+              onClick={() => setViewMode("grid")}
+              className={`p-1.5 rounded-lg transition-all ${
+                viewMode === "grid" ? "bg-emerald-600 text-white" : "text-slate-400 hover:text-slate-200"
+              }`}
+            >
+              <LayoutGrid className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => setViewMode("list")}
+              className={`p-1.5 rounded-lg transition-all ${
+                viewMode === "list" ? "bg-emerald-600 text-white" : "text-slate-400 hover:text-slate-200"
+              }`}
+            >
+              <List className="w-4 h-4" />
+            </button>
+          </div>
+
           <button
-    onClick={onRefresh}
-    className="p-2 text-slate-600 hover:text-slate-900 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl transition-colors"
-    title="Refresh Found Items"
-  >
+            onClick={onRefresh}
+            className="p-2 text-slate-400 hover:text-emerald-400 bg-slate-950 border border-slate-800 rounded-xl transition-colors"
+          >
             <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
           </button>
         </div>
       </div>
 
-      {
-    /* Grid of Found Items */
-  }
-      {loading ? <div className="py-20 text-center space-y-3">
-          <div className="w-10 h-10 mx-auto border-2 border-emerald-600 border-t-transparent rounded-full animate-spin" />
-          <p className="text-xs text-slate-500">Fetching found items from campus database...</p>
-        </div> : foundItems.length === 0 ? <div className="py-20 text-center bg-white rounded-3xl border border-slate-200 p-8 shadow-sm space-y-3">
-          <PackageSearch className="w-12 h-12 text-slate-400 mx-auto" />
-          <h3 className="text-base font-bold text-slate-800">No Found Items Match Your Filter</h3>
-          <p className="text-xs text-slate-500 max-w-md mx-auto">
-            No found reports match the selected category or search query. Found something on campus? Log it now to help a student.
+      {/* Grid or Empty */}
+      {loading ? (
+        <div className="py-20 text-center space-y-4">
+          <div className="w-10 h-10 mx-auto border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+          <p className="text-xs text-slate-400">Loading found items...</p>
+        </div>
+      ) : foundItems.length === 0 ? (
+        <div className="py-16 text-center bg-slate-900/90 rounded-3xl border border-slate-800 p-8 shadow-xl space-y-3">
+          <PackageSearch className="w-12 h-12 text-slate-600 mx-auto" />
+          <h3 className="text-base font-bold text-slate-200">No found items logged in this category</h3>
+          <p className="text-xs text-slate-400 max-w-md mx-auto">
+            Did you pick up an unattended item on campus? Help the owner by logging it now.
           </p>
           <button
-    onClick={onOpenPostFound}
-    className="mt-2 inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white font-semibold text-xs rounded-xl hover:bg-emerald-700"
-  >
-            <PlusCircle className="w-4 h-4" />
-            <span>Post Found Item</span>
+            onClick={onOpenPostFound}
+            className="mt-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl shadow-md"
+          >
+            + Report Found Item
           </button>
-        </div> : <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {foundItems.map((item) => <ItemCard
-    key={item.id}
-    item={item}
-    currentUser={currentUser}
-    onSelect={onSelectItem}
-    onOpenMatch={onOpenMatch}
-    onOpenClaim={onOpenClaim}
-    onOpenQR={onOpenQR}
-    onReport={onReport}
-  />)}
-        </div>}
-    </div>;
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {foundItems.map((item) => (
+            <ItemCard
+              key={item.id}
+              item={item}
+              currentUser={currentUser}
+              onSelect={onSelectItem}
+              onOpenMatch={onOpenMatch}
+              onOpenClaim={onOpenClaim}
+              onOpenQR={onOpenQR}
+              onReport={onReport}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
 };

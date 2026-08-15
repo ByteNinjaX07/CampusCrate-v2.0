@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { X, Sparkles, Upload, Image as ImageIcon, CheckCircle2, AlertCircle } from "lucide-react";
+import { X, Sparkles, Upload, Image as ImageIcon, CheckCircle2, AlertCircle, Zap, ShieldCheck } from "lucide-react";
+
 export const PostItemModal = ({
   initialType = "lost",
   currentUser,
@@ -11,7 +12,7 @@ export const PostItemModal = ({
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState("Electronics");
   const [location, setLocation] = useState("");
-  const [date, setDate] = useState((/* @__PURE__ */ new Date()).toISOString().split("T")[0]);
+  const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
   const [description, setDescription] = useState("");
   const [claimQuestion, setClaimQuestion] = useState("");
   const [tags, setTags] = useState([]);
@@ -24,6 +25,58 @@ export const PostItemModal = ({
   const [uploadSuccess, setUploadSuccess] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+
+  const presetPhotos = [
+    { label: "Laptop / Tech", url: "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=800&q=80" },
+    { label: "Keys / Keyring", url: "https://images.unsplash.com/photo-1582139329536-e7284fece509?auto=format&fit=crop&w=800&q=80" },
+    { label: "Water Bottle / Flask", url: "https://images.unsplash.com/photo-1602143407151-7111542de6e8?auto=format&fit=crop&w=800&q=80" },
+    { label: "Headphones", url: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=800&q=80" },
+    { label: "Backpack / Bag", url: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=800&q=80" },
+    { label: "Student ID / Card", url: "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=800&q=80" }
+  ];
+
+  const quickSamples = [
+    {
+      title: "Space Gray M2 MacBook Air (13-inch)",
+      category: "Electronics",
+      location: "Central Library 3rd Floor Desk #42",
+      description: "Left on wooden study table near south windows. Has a GitHub and NASA sticker on the top cover.",
+      claimQuestion: "What wallpaper or user account name is displayed on the lock screen?",
+      tags: ["Apple", "MacBook", "M2", "Library", "SpaceGray"],
+      photo: presetPhotos[0].url
+    },
+    {
+      title: "Apple AirPods Pro (2nd Gen with Lanyard)",
+      category: "Electronics",
+      location: "Student Union Cafeteria Table #14",
+      description: "White charging case with subtle scratch on the bottom hinge. Found during lunch hour.",
+      claimQuestion: "What is engraved on the front of the case or what Bluetooth name does it broadcast?",
+      tags: ["AirPods", "Apple", "Audio", "StudentUnion"],
+      photo: presetPhotos[3].url
+    },
+    {
+      title: "Hydro Flask 32oz Wide Mouth (Pacific Blue)",
+      category: "Other",
+      location: "East Gym Basketball Bleachers",
+      description: "Has slight dent on base rim and stickers from Yosemite National Park and Patagonia.",
+      claimQuestion: "Describe the cap style (straw vs flex lid) and color of boot sleeve.",
+      tags: ["HydroFlask", "Gym", "WaterBottle", "Blue"],
+      photo: presetPhotos[2].url
+    }
+  ];
+
+  const handleApplySample = (sample) => {
+    setTitle(sample.title);
+    setCategory(sample.category);
+    setLocation(sample.location);
+    setDescription(sample.description);
+    setClaimQuestion(sample.claimQuestion);
+    setTags(sample.tags);
+    setSelectedPreset(sample.photo);
+    setPhotoUrl("");
+    setUploadSuccess(false);
+  };
+
   const handleFileUpload = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -61,23 +114,18 @@ export const PostItemModal = ({
     };
     reader.readAsDataURL(file);
   };
-  const presetPhotos = [
-    { label: "Laptop / Tech", url: "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=800&q=80" },
-    { label: "Keys / Keyring", url: "https://images.unsplash.com/photo-1582139329536-e7284fece509?auto=format&fit=crop&w=800&q=80" },
-    { label: "Water Bottle / Flask", url: "https://images.unsplash.com/photo-1602143407151-7111542de6e8?auto=format&fit=crop&w=800&q=80" },
-    { label: "Headphones", url: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=800&q=80" },
-    { label: "Backpack / Bag", url: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=800&q=80" },
-    { label: "Student ID / Wallet", url: "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=800&q=80" }
-  ];
+
   const handleAddTag = () => {
     if (tagInput.trim() && !tags.includes(tagInput.trim())) {
       setTags([...tags, tagInput.trim()]);
       setTagInput("");
     }
   };
+
   const handleRemoveTag = (tagToRemove) => {
     setTags(tags.filter((t) => t !== tagToRemove));
   };
+
   const handleAIAssist = async () => {
     if (!title && !description) {
       setError("Please type a title or short description first so AI can analyze!");
@@ -110,6 +158,7 @@ export const PostItemModal = ({
       setAiLoading(false);
     }
   };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!currentUser.authenticated) {
@@ -126,6 +175,7 @@ export const PostItemModal = ({
     setSubmitting(true);
     setError("");
     const finalPhoto = photoUrl || selectedPreset || presetPhotos[0].url;
+
     try {
       const res = await fetch("/api/items", {
         method: "POST",
@@ -144,10 +194,13 @@ export const PostItemModal = ({
             email: currentUser.email,
             avatarUrl: currentUser.avatarUrl
           },
-          claimQuestion: claimQuestion || "Please describe any distinguishing marks, serial details, or lock screen wallpaper.",
+          claimQuestion:
+            claimQuestion ||
+            "Please describe any distinguishing marks, serial details, or lock screen wallpaper.",
           tags
         })
       });
+
       if (!res.ok) {
         throw new Error("Failed to create post");
       }
@@ -160,356 +213,296 @@ export const PostItemModal = ({
       setSubmitting(false);
     }
   };
-  return <div className="fixed inset-0 z-50 bg-slate-950/40 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
-      <div className="bg-white border border-slate-200 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden shadow-2xl flex flex-col text-slate-900">
 
-        {
-    /* Modal Header */
-  }
-        <div className="p-4 sm:p-5 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+  return (
+    <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200">
+      <div className="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-2xl max-h-[90vh] overflow-hidden shadow-2xl flex flex-col text-slate-100">
+        {/* Modal Header */}
+        <div className="p-5 bg-slate-950/80 border-b border-slate-800 flex items-center justify-between">
           <div>
-            <h2 className="text-lg font-bold text-slate-950 flex items-center gap-2">
+            <h2 className="text-lg font-black text-white flex items-center gap-2">
               <span>Report Campus Item</span>
-              <span className="px-2 py-0.5 rounded text-[10px] uppercase font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">
-                AI Enabled
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] uppercase font-extrabold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
+                AI Auto-Tagging Active
               </span>
             </h2>
-            <p className="text-xs text-slate-500">Add report details to notify the campus network and trigger AI matching</p>
+            <p className="text-xs text-slate-400">
+              Submit report details to alert campus network and trigger Gemini AI cross-matching
+            </p>
           </div>
 
-          <button onClick={onClose} className="p-1.5 text-slate-400 hover:text-slate-700 bg-white border border-slate-200 rounded-lg">
+          <button
+            onClick={onClose}
+            className="p-2 text-slate-400 hover:text-slate-100 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl transition-all"
+          >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {
-    /* Auth Notice Banner if unauthenticated */
-  }
-        {!currentUser.authenticated && <div className="bg-amber-50 border-b border-amber-200 p-3.5 px-5 text-xs text-amber-900 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-            <div className="flex items-center gap-2">
-              <AlertCircle className="w-5 h-5 text-amber-600 shrink-0" />
-              <div>
-                <p className="font-bold">Google / University Login Required</p>
-                <p className="text-amber-700 text-[11px]">To report a lost or found item, please log in with your Google or Campus Email account.</p>
-              </div>
-            </div>
-            {onRequireAuth && <button
-    type="button"
-    onClick={onRequireAuth}
-    className="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-lg shadow-2xs whitespace-nowrap text-xs transition-colors"
-  >
-                Sign In Now
-              </button>}
-          </div>}
+        {/* Quick Sample Fill Toolbar */}
+        <div className="bg-slate-950/60 border-b border-slate-800/80 p-3 px-5 flex items-center gap-2 overflow-x-auto text-[11px] scrollbar-none">
+          <span className="text-slate-400 shrink-0 font-semibold flex items-center gap-1">
+            <Zap className="w-3.5 h-3.5 text-cyan-400" /> Quick Fill Demo:
+          </span>
+          {quickSamples.map((sample, idx) => (
+            <button
+              key={idx}
+              type="button"
+              onClick={() => handleApplySample(sample)}
+              className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg whitespace-nowrap border border-slate-700 font-medium transition-colors"
+            >
+              ⚡ {sample.title.split(" ")[0]} {sample.title.split(" ")[1]}
+            </button>
+          ))}
+        </div>
 
-        {
-    /* Form Body */
-  }
-        <form onSubmit={handleSubmit} className="p-4 sm:p-6 overflow-y-auto space-y-4 flex-1 text-xs">
-
-          {error && <div className="p-3 bg-rose-50 border border-rose-200 text-rose-700 rounded-xl flex items-center gap-2">
-              <AlertCircle className="w-4 h-4 shrink-0" />
+        {/* Form Body */}
+        <form onSubmit={handleSubmit} className="p-5 sm:p-6 overflow-y-auto space-y-4 flex-1 text-xs">
+          {error && (
+            <div className="p-3 bg-rose-500/10 border border-rose-500/30 text-rose-300 rounded-xl flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
               <span>{error}</span>
-            </div>}
+            </div>
+          )}
 
-          {
-    /* Type Selector Tabs */
-  }
+          {/* Type Selector Tabs */}
           <div className="grid grid-cols-2 gap-3">
             <button
-    type="button"
-    onClick={() => setType("lost")}
-    className={`py-2.5 px-4 rounded-xl font-bold flex items-center justify-center gap-2 border transition-all ${type === "lost" ? "bg-rose-600 text-white border-rose-600 shadow-sm" : "bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100"}`}
-  >
-              <span className="w-2 h-2 rounded-full bg-rose-300" />
+              type="button"
+              onClick={() => setType("lost")}
+              className={`py-3 px-4 rounded-xl font-bold flex items-center justify-center gap-2 border transition-all ${
+                type === "lost"
+                  ? "bg-rose-600 text-white border-rose-500 shadow-lg shadow-rose-950/50"
+                  : "bg-slate-950/60 text-slate-400 border-slate-800 hover:bg-slate-800"
+              }`}
+            >
+              <span className="w-2.5 h-2.5 rounded-full bg-rose-400" />
               <span>Lost Something</span>
             </button>
 
             <button
-    type="button"
-    onClick={() => setType("found")}
-    className={`py-2.5 px-4 rounded-xl font-bold flex items-center justify-center gap-2 border transition-all ${type === "found" ? "bg-emerald-600 text-white border-emerald-600 shadow-sm" : "bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100"}`}
-  >
-              <span className="w-2 h-2 rounded-full bg-emerald-300" />
+              type="button"
+              onClick={() => setType("found")}
+              className={`py-3 px-4 rounded-xl font-bold flex items-center justify-center gap-2 border transition-all ${
+                type === "found"
+                  ? "bg-emerald-600 text-white border-emerald-500 shadow-lg shadow-emerald-950/50"
+                  : "bg-slate-950/60 text-slate-400 border-slate-800 hover:bg-slate-800"
+              }`}
+            >
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-400" />
               <span>Found Something</span>
             </button>
           </div>
 
-          {
-    /* Title Input & AI Magic Assist */
-  }
+          {/* Title Input & AI Magic Assist */}
           <div>
-            <div className="flex items-center justify-between mb-1">
-              <label className="font-semibold text-slate-800">Item Name / Title *</label>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="font-bold text-slate-200">Item Name / Title *</label>
               <button
-    type="button"
-    onClick={handleAIAssist}
-    disabled={aiLoading}
-    className="px-2.5 py-1 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-indigo-700 rounded-lg text-[11px] font-semibold flex items-center gap-1 transition-all"
-  >
-                <Sparkles className="w-3 h-3 text-indigo-600" />
-                <span>{aiLoading ? "Analyzing..." : "\u2728 Magic AI Auto-Fill"}</span>
+                type="button"
+                onClick={handleAIAssist}
+                disabled={aiLoading}
+                className="px-2.5 py-1 bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 text-cyan-300 rounded-lg text-[11px] font-bold flex items-center gap-1 transition-all"
+              >
+                <Sparkles className="w-3 h-3 text-cyan-400 animate-spin" />
+                <span>{aiLoading ? "Analyzing..." : "✨ AI Auto-Suggest"}</span>
               </button>
             </div>
             <input
-    type="text"
-    value={title}
-    onChange={(e) => setTitle(e.target.value)}
-    placeholder="e.g. Space Gray 14-inch MacBook Pro with Yosemite sticker"
-    className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-    required
-  />
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="e.g. Space Gray 14-inch MacBook Pro with Yosemite sticker"
+              className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+              required
+            />
           </div>
 
-          {
-    /* Category & Location Grid */
-  }
+          {/* Category & Location Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="font-semibold text-slate-800 block mb-1">Category *</label>
+              <label className="font-bold text-slate-200 block mb-1.5">Category *</label>
               <select
-    value={category}
-    onChange={(e) => setCategory(e.target.value)}
-    className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-  >
-                <option value="Electronics">Electronics</option>
-                <option value="Keys & Cards">Keys & Cards</option>
-                <option value="Bags & Backpacks">Bags & Backpacks</option>
-                <option value="Clothing & Accessories">Clothing & Accessories</option>
-                <option value="Books & Stationery">Books & Stationery</option>
-                <option value="Jewelry & Watches">Jewelry & Watches</option>
-                <option value="Sports & Fitness">Sports & Fitness</option>
-                <option value="Other">Other</option>
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-100 focus:outline-none focus:ring-2 focus:ring-cyan-500 cursor-pointer"
+              >
+                <option value="Electronics" className="bg-slate-900">Electronics</option>
+                <option value="Keys & Cards" className="bg-slate-900">Keys & Cards</option>
+                <option value="Bags & Backpacks" className="bg-slate-900">Bags & Backpacks</option>
+                <option value="Clothing & Accessories" className="bg-slate-900">Clothing & Accessories</option>
+                <option value="Books & Stationery" className="bg-slate-900">Books & Stationery</option>
+                <option value="Jewelry & Watches" className="bg-slate-900">Jewelry & Watches</option>
+                <option value="Sports & Fitness" className="bg-slate-900">Sports & Fitness</option>
+                <option value="Other" className="bg-slate-900">Other</option>
               </select>
             </div>
 
             <div>
-              <label className="font-semibold text-slate-800 block mb-1">Campus Location *</label>
+              <label className="font-bold text-slate-200 block mb-1.5">Campus Location *</label>
               <input
-    type="text"
-    value={location}
-    onChange={(e) => setLocation(e.target.value)}
-    placeholder="e.g. Science Building - Room 204"
-    className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-    required
-  />
+                type="text"
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
+                placeholder="e.g. Central Library Floor 2"
+                className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                required
+              />
             </div>
           </div>
 
-          {
-    /* Date & Tags */
-  }
+          {/* Date & Tags */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="font-semibold text-slate-800 block mb-1">Date {type === "lost" ? "Lost" : "Found"}</label>
+              <label className="font-bold text-slate-200 block mb-1.5">
+                Date {type === "lost" ? "Lost" : "Found"}
+              </label>
               <input
-    type="date"
-    value={date}
-    onChange={(e) => setDate(e.target.value)}
-    className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-  />
+                type="date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-100 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+              />
             </div>
 
             <div>
-              <label className="font-semibold text-slate-800 block mb-1">Tags / Keywords</label>
-              <div className="flex items-center gap-1">
+              <label className="font-bold text-slate-200 block mb-1.5">Tags / Keywords</label>
+              <div className="flex items-center gap-1.5">
                 <input
-    type="text"
-    value={tagInput}
-    onChange={(e) => setTagInput(e.target.value)}
-    onKeyDown={(e) => {
-      if (e.key === "Enter") {
-        e.preventDefault();
-        handleAddTag();
-      }
-    }}
-    placeholder="e.g. Apple, SpaceGray"
-    className="flex-1 px-3 py-2 bg-white border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-  />
+                  type="text"
+                  value={tagInput}
+                  onChange={(e) => setTagInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      handleAddTag();
+                    }
+                  }}
+                  placeholder="e.g. Apple, SpaceGray"
+                  className="flex-1 px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                />
                 <button
-    type="button"
-    onClick={handleAddTag}
-    className="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl border border-slate-200"
-  >
+                  type="button"
+                  onClick={handleAddTag}
+                  className="px-3.5 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold rounded-xl border border-slate-700 transition-colors"
+                >
                   Add
                 </button>
               </div>
             </div>
           </div>
 
-          {
-    /* Rendered Tags List */
-  }
-          {tags.length > 0 && <div className="flex flex-wrap gap-1.5 pt-1">
-              {tags.map((t, idx) => <span key={idx} className="px-2.5 py-1 bg-indigo-50 border border-indigo-200 text-indigo-700 rounded-lg flex items-center gap-1 text-[11px] font-semibold">
+          {/* Tags List */}
+          {tags.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 pt-1">
+              {tags.map((t, idx) => (
+                <span
+                  key={idx}
+                  className="px-2.5 py-1 bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 rounded-lg flex items-center gap-1 text-[11px] font-bold"
+                >
                   #{t}
-                  <button type="button" onClick={() => handleRemoveTag(t)} className="hover:text-rose-600">
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveTag(t)}
+                    className="hover:text-rose-400"
+                  >
                     <X className="w-3 h-3" />
                   </button>
-                </span>)}
-            </div>}
+                </span>
+              ))}
+            </div>
+          )}
 
-          {
-    /* Description */
-  }
+          {/* Description */}
           <div>
-            <label className="font-semibold text-slate-800 block mb-1">Detailed Description *</label>
+            <label className="font-bold text-slate-200 block mb-1.5">Detailed Description *</label>
             <textarea
-    value={description}
-    onChange={(e) => setDescription(e.target.value)}
-    rows={3}
-    placeholder="Describe distinguishing features, contents, scratches, or exact spot where item was seen..."
-    className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-    required
-  />
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              rows={3}
+              placeholder="Describe distinguishing features, contents, scratches, or exact spot where item was seen..."
+              className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+              required
+            />
           </div>
 
-          {
-    /* Verification Claim Question */
-  }
-          <div className="bg-indigo-50/50 p-3 rounded-xl border border-indigo-100 space-y-1">
-            <label className="font-bold text-indigo-900 block">
-              Claim Verification Question (Asked to claimant to prove ownership)
+          {/* Verification Claim Question */}
+          <div className="bg-indigo-950/30 p-3.5 rounded-2xl border border-indigo-900/40 space-y-1.5">
+            <label className="font-bold text-indigo-300 block flex items-center gap-1.5">
+              <ShieldCheck className="w-4 h-4 text-cyan-400" />
+              Claim Verification Question (Asked to verify ownership)
             </label>
             <input
-    type="text"
-    value={claimQuestion}
-    onChange={(e) => setClaimQuestion(e.target.value)}
-    placeholder="e.g. What stickers are on the laptop lid or what wallpaper is set?"
-    className="w-full px-3 py-1.5 bg-white border border-indigo-200 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-xs"
-  />
+              type="text"
+              value={claimQuestion}
+              onChange={(e) => setClaimQuestion(e.target.value)}
+              placeholder="e.g. What stickers are on the laptop lid or what wallpaper is set?"
+              className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 text-xs"
+            />
           </div>
 
-          {
-    /* Photo Upload with Cloudinary Integration */
-  }
+          {/* Photo Selection */}
           <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <label className="font-semibold text-slate-800 flex items-center gap-1.5">
-                <ImageIcon className="w-4 h-4 text-indigo-600" />
-                Item Photo (Cloudinary Upload / Preset / URL)
-              </label>
-              <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-sky-50 text-sky-700 border border-sky-200/80 flex items-center gap-1">
-                ☁️ Cloudinary Enabled
-              </span>
-            </div>
+            <label className="font-bold text-slate-200 flex items-center gap-1.5">
+              <ImageIcon className="w-4 h-4 text-cyan-400" />
+              Item Photo Preset / Custom URL
+            </label>
 
-            {
-    /* Direct File Upload to Cloudinary Box */
-  }
-            <div className="border-2 border-dashed border-indigo-200 hover:border-indigo-400 bg-indigo-50/40 rounded-xl p-3.5 text-center transition-colors">
-              <input
-    type="file"
-    id="cloudinary-file-input"
-    accept="image/*"
-    onChange={handleFileUpload}
-    className="hidden"
-    disabled={uploadingImage}
-  />
-              <label
-    htmlFor="cloudinary-file-input"
-    className="cursor-pointer flex flex-col items-center justify-center gap-1 text-xs text-indigo-900 font-medium"
-  >
-                {uploadingImage ? <div className="flex items-center gap-2 py-1 text-indigo-600 font-semibold">
-                    <div className="w-4 h-4 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin" />
-                    <span>Uploading to Cloudinary...</span>
-                  </div> : uploadSuccess ? <div className="flex items-center gap-2 text-emerald-700 font-bold bg-emerald-50 px-3 py-1 rounded-lg border border-emerald-200">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                    <span>Photo Uploaded Successfully ({uploadProvider === "cloudinary" ? "Cloudinary Hosted" : "Ready"})</span>
-                  </div> : <>
-                    <div className="p-2 bg-indigo-600 text-white rounded-xl shadow-2xs mb-0.5">
-                      <Upload className="w-4 h-4" />
-                    </div>
-                    <span className="font-bold text-slate-900">Click to upload photo from your device</span>
-                    <span className="text-[11px] text-slate-500">Supports JPG, PNG, WEBP up to 8MB. Auto-optimized via Cloudinary.</span>
-                  </>}
-              </label>
-            </div>
-
-            {
-    /* Preview of current photo if uploaded or pasted */
-  }
-            {photoUrl && <div className="flex items-center gap-3 p-2 bg-slate-50 border border-slate-200 rounded-xl">
-                <img src={photoUrl} alt="Preview" className="w-12 h-12 object-cover rounded-lg border border-slate-200 shadow-2xs" />
-                <div className="flex-1 min-w-0 text-xs">
-                  <p className="font-bold text-slate-900 truncate">{photoUrl}</p>
-                  <p className="text-[10px] text-slate-500">
-                    {uploadProvider === "cloudinary" ? "\u2601\uFE0F Cloudinary Secure URL" : "Custom Image URL"}
-                  </p>
-                </div>
+            {/* Presets Grid */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              {presetPhotos.map((preset, idx) => (
                 <button
-    type="button"
-    onClick={() => {
-      setPhotoUrl("");
-      setUploadSuccess(false);
-      setUploadProvider(null);
-    }}
-    className="p-1 text-slate-400 hover:text-rose-600"
-    title="Remove image"
-  >
-                  <X className="w-4 h-4" />
+                  key={idx}
+                  type="button"
+                  onClick={() => {
+                    setSelectedPreset(preset.url);
+                    setPhotoUrl("");
+                    setUploadSuccess(false);
+                  }}
+                  className={`p-2 rounded-xl border flex items-center gap-2 text-[11px] text-left transition-all ${
+                    selectedPreset === preset.url
+                      ? "bg-cyan-500/20 border-cyan-400 text-cyan-300 font-bold shadow-md shadow-cyan-950/50"
+                      : "bg-slate-950/60 border-slate-800 text-slate-400 hover:bg-slate-800 hover:text-slate-200"
+                  }`}
+                >
+                  <img src={preset.url} alt={preset.label} className="w-7 h-7 rounded-lg object-cover" />
+                  <span className="truncate">{preset.label}</span>
                 </button>
-              </div>}
-
-            {
-    /* Quick Presets Dropdown/Grid Alternative */
-  }
-            <div className="pt-1">
-              <span className="text-[11px] font-semibold text-slate-500 block mb-1.5">Or choose a quick preset sample:</span>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                {presetPhotos.map((preset, idx) => <button
-    key={idx}
-    type="button"
-    onClick={() => {
-      setSelectedPreset(preset.url);
-      setPhotoUrl("");
-      setUploadSuccess(false);
-    }}
-    className={`p-1.5 px-2 rounded-xl border flex items-center gap-2 text-[11px] text-left transition-all ${selectedPreset === preset.url ? "bg-indigo-50 border-indigo-500 text-indigo-900 font-semibold" : "bg-white border-slate-200 text-slate-600 hover:border-slate-300"}`}
-  >
-                    <img src={preset.url} alt={preset.label} className="w-6 h-6 rounded object-cover" />
-                    <span className="truncate">{preset.label}</span>
-                  </button>)}
-              </div>
+              ))}
             </div>
 
             <input
-    type="url"
-    value={photoUrl}
-    onChange={(e) => {
-      setPhotoUrl(e.target.value);
-      setSelectedPreset("");
-      setUploadSuccess(false);
-    }}
-    placeholder="Or paste external image URL (e.g. https://...)"
-    className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-xs mt-1"
-  />
+              type="url"
+              value={photoUrl}
+              onChange={(e) => {
+                setPhotoUrl(e.target.value);
+                setSelectedPreset("");
+              }}
+              placeholder="Or paste external image URL (e.g. https://...)"
+              className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 text-xs"
+            />
           </div>
 
-
-          {
-    /* Submit Footer */
-  }
-          <div className="pt-4 border-t border-slate-200 flex items-center justify-end gap-3">
+          {/* Submit Footer */}
+          <div className="pt-4 border-t border-slate-800 flex items-center justify-end gap-3">
             <button
-    type="button"
-    onClick={onClose}
-    className="px-4 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold rounded-xl transition-colors"
-  >
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl border border-slate-700 transition-colors"
+            >
               Cancel
             </button>
 
             <button
-    type="submit"
-    disabled={submitting}
-    className="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl shadow-sm flex items-center gap-2 transition-colors"
-  >
+              type="submit"
+              disabled={submitting}
+              className="px-6 py-2.5 bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-slate-950 font-black rounded-xl shadow-lg shadow-cyan-950/50 flex items-center gap-2 transition-all"
+            >
               {submitting ? "Publishing..." : "Publish Item Report"}
             </button>
           </div>
-
         </form>
-
       </div>
-    </div>;
+    </div>
+  );
 };
